@@ -18,7 +18,7 @@ jobs:
             python38-pytz python38-cython gcc-core gcc-g++
             python38-html5lib python38-hypothesis python38-jinja2
             python38-lxml python38-matplotlib python38-pytest
-            python38-requests git cmake
+            python38-requests git cmake liblapack-devel
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
@@ -29,7 +29,7 @@ jobs:
       - name: Install build and test dependencies
         run: |
           dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build pybind11"
-          dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy requirements-dev.txt >requirements-install.txt"
+          dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy -e numba -e fastparquet requirements-dev.txt >requirements-install.txt"
           dash -c "/usr/bin/python3.8 -m pip install --no-build-isolation -r requirements-install.txt"
       - name: Build Pandas wheel
         run: |
