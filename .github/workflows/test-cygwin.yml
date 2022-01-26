@@ -18,7 +18,7 @@ jobs:
             python38-pytz python38-cython gcc-core gcc-g++
             python38-html5lib python38-hypothesis python38-jinja2
             python38-lxml python38-matplotlib python38-pytest
-            python38-requests git
+            python38-requests git cmake
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
