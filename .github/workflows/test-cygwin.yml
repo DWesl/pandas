@@ -25,7 +25,7 @@ jobs:
           dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
       - name: Checkout with Cygwin git
         run: |
-          dash -c '/usr/bin/git checkout HEAD'
+          C:\tools\cygwin\bin\dash -c '/usr/bin/git checkout HEAD'
       - name: Build Pandas wheel
         run: |
           dash -c "/usr/bin/python3.8 -m pip install -r requirements-dev.txt"
