@@ -28,8 +28,8 @@ jobs:
           C:\tools\cygwin\bin\dash -c '/usr/bin/git checkout HEAD'
       - name: Install build and test dependencies
         run: |
-          dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build"
-          dash -c "/usr/bin/grep -v -F -e statsmodels requirements-dev.txt >requirements-install.txt"
+          dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build pybind11"
+          dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy requirements-dev.txt >requirements-install.txt"
           dash -c "/usr/bin/python3.8 -m pip install --no-build-isolation -r requirements-install.txt"
       - name: Build Pandas wheel
         run: |
