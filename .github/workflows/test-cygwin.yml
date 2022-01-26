@@ -29,9 +29,9 @@ jobs:
       - name: Build Pandas wheel
         run: |
           dash -c "/usr/bin/python3.8 -m pip install -r requirements-dev.txt"
-      - Install the new Pandas wheel
+      - name: Install the new Pandas wheel
         run: |
           dash -c "/usr/bin/python3.8 -m pip install dist/pandas-*cp38*.whl"
-      - Run Pandas test suite
+      - name: Run Pandas test suite
         run: |
           dash test_fast.sh
