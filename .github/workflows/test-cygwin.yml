@@ -26,9 +26,13 @@ jobs:
       - name: Checkout with Cygwin git
         run: |
           C:\tools\cygwin\bin\dash -c '/usr/bin/git checkout HEAD'
+      - name: Install build and test dependencies
+        run: |
+          dash -c "/usr/bin/grep -v -F -e statsmodels requirements-dev.txt >requirements-install.txt"
+          dash -c "/usr/bin/python3.8 -m pip install -r requirements-install.txt"
       - name: Build Pandas wheel
         run: |
-          dash -c "/usr/bin/python3.8 -m pip install -r requirements-dev.txt"
+          dash -c "/usr/bin/python3.8 setup.py bdist_wheel"
       - name: Install the new Pandas wheel
         run: |
           dash -c "/usr/bin/python3.8 -m pip install dist/pandas-*cp38*.whl"
