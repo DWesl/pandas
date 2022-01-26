@@ -1,0 +1,37 @@
+name: Test on Cygwin
+on: push
+
+jobs:
+  cygwin_build_test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 3000
+      - name: Install Cygwin
+        uses: egor-tensin/setup-cygwin@v3
+        with:
+          platform: x64
+          install-dir: 'C:\tools\cygwin'
+          packages: >-
+            python38-numpy python38-devel python38-dateutil
+            python38-pytz python38-cython gcc-core gcc-g++
+            python38-html5lib python38-hypothesis python38-jinja2
+            python38-lxml python38-matplotlib python38-pytest
+            python38-requests
+      - name: Set Windows PATH
+        uses: egor-tensin/cleanup-path@v1
+        with:
+          dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
+      - name: Checkout with Cygwin git
+        run: |
+          dash -c '/usr/bin/git checkout HEAD'
+      - name: Build Pandas wheel
+        run: |
+          dash -c "/usr/bin/python3.8 -m pip install -r requirements-dev.txt"
+      - Install the new Pandas wheel
+        run: |
+          dash -c "/usr/bin/python3.8 -m pip install dist/pandas-*cp38*.whl"
+      - Run Pandas test suite
+        run: |
+          dash test_fast.sh
