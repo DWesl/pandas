@@ -43,4 +43,4 @@ jobs:
         run: |
           dash -c "/usr/bin/dos2unix test_fast.sh"
           dash -c "mkdir run_tests"
-          dash -c "cd run_tests; bash ../test_fast.sh 3.8
+          dash -c "cd run_tests; bash ../test_fast.sh 3.8"
