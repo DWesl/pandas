@@ -41,4 +41,4 @@ jobs:
           dash -c "/usr/bin/python3.8 -m pip install dist/pandas-*cp38*.whl"
       - name: Run Pandas test suite
         run: |
-          dash test_fast.sh
+          bash test_fast.sh
