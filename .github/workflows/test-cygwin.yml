@@ -20,7 +20,7 @@ jobs:
             python38-lxml python38-matplotlib python38-pytest
             python38-requests git cmake liblapack-devel libhdf5-devel
             python38-cryptography python38-zmq python38-ipython
-            libsnappy-devel libiconv-devel dos2unix
+            libsnappy-devel libiconv-devel dos2unix alternatives
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
@@ -36,6 +36,9 @@ jobs:
       - name: Install the new Pandas wheel
         run: |
           dash -c "/usr/bin/python3.8 -m pip install dist/pandas-*cp38*.whl"
+      - name: Make pytest-3.8 available as pytest
+        run: |
+          dash -c "/usr/sbin/alternatives --install /usr/bin/pytest pytest /usr/bin/pytest-3.8 38"
       - name: Run Pandas test suite
         run: |
           dash -c "/usr/bin/dos2unix test_fast.sh"
