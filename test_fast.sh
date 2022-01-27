@@ -5,11 +5,4 @@
 # https://github.com/pytest-dev/pytest/issues/1075
 export PYTHONHASHSEED=$(python -c 'import random; print(random.randint(1, 4294967295))')
 
-cmd='pytest pandas --skip-slow --skip-network --skip-db -m "not single" -n 4 -r sxX "$@"'
-
-if [ $(uname -o) -eq Cygwin ]
-then
-    python -m "${cmd}"
-else
-    "${cmd}"
-fi
+pytest pandas --skip-slow --skip-network --skip-db -m "not single" -n 4 -r sxX "$@"
