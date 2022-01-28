@@ -11,6 +11,10 @@ on:
       - "requirements-dev.txt"
       - "pandas/**"
 
+env:
+  PYTEST_WORKERS: "auto"
+  PANDAS_CI: 1
+
 jobs:
   cygwin_build_test:
     runs-on: windows-latest
