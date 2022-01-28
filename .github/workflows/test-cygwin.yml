@@ -44,14 +44,14 @@ jobs:
             python38-requests git cmake liblapack-devel libhdf5-devel
             python38-cryptography python38-zmq python38-ipython
             libsnappy-devel libiconv-devel dos2unix alternatives
-            python38-sip python38-pyqt-builder
+            python38-sip python38-pyqt-builder libQt5Core-devel
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
           dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
       - name: Install build and test dependencies
         run: |
-          dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build pybind11"
+          dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build pybind11 'sip>=5.0.1,<6'"
           dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy -e numba -e fastparquet -e pyarrow -e xarray -e seaborn -e blosc -e tables -e boto -e s3 -e pyreadstat -e parquet requirements-dev.txt >requirements-install.txt"
           dash -c "/usr/bin/python3.8 -m pip install --no-build-isolation -r requirements-install.txt"
       - name: Make pytest-3.8 available as pytest
