@@ -19,6 +19,7 @@ jobs:
       IS_PYPY: false
       COVERAGE: false
     concurrency:
+      group: ${{ github.event_name == 'push' && github.run_number || github.ref }}-"actions-38.yaml"-"not slow and not network and not clipboard"
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
