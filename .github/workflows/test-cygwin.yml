@@ -62,7 +62,7 @@ jobs:
           dash -c "/usr/bin/python3.8 -m pip install -e . --no-build-isolation --no-use-pep517 --no-index"
       - name: Rebase DLLs
         run: |
-          dash -c "/usr/bin/dox2unix ci/rebase_installed_dlls_cygwin.sh ci/list_pandas_dlls.sh
+          dash -c "/usr/bin/dox2unix ci/rebase_installed_dlls_cygwin.sh ci/list_pandas_dlls.sh"
           dash ci/rebase_installed_dlls_cygwin.sh 3.8
       - name: Run Pandas test suite
         run: |
