@@ -1,5 +1,13 @@
 name: Test on Cygwin
-on: push
+on:
+  push:
+    paths:
+      - "!.github/**"
+      - ".github/workflows/test-cygwin.yml"
+      - "!doc/**"
+      - "!ci/**"
+      - "ci/deps/actions-38.yaml"
+      - "ci/run_tests.sh"
 
 jobs:
   cygwin_build_test:
