@@ -59,4 +59,4 @@ jobs:
       - name: Run Pandas test suite
         run: |
           dash -c "/usr/bin/dos2unix ci/run_tests.sh"
-          bash ci/run_tests.sh"
+          bash ci/run_tests.sh
