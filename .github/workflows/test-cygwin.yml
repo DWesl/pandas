@@ -44,7 +44,7 @@ jobs:
             python38-requests git cmake liblapack-devel libhdf5-devel
             python38-cryptography python38-zmq python38-ipython
             libsnappy-devel libiconv-devel dos2unix alternatives
-            python38-sip
+            python38-sip python38-pyqt-builder
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
