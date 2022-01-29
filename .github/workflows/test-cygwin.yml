@@ -53,7 +53,7 @@ jobs:
       - name: Install build and test dependencies
         run: |
           dash -c "/usr/bin/python3.5 -m pip install -U pip setuptools wheel"
-          dash -c "/usr/bin/python3.5 -m pip install sphinx-theme-builder scikit-build pybind11 'sip>=5.0.1,<6'"
+          dash -c "/usr/bin/python3.5 -m pip install scikit-build pybind11 'sip>=5.0.1,<6'"
           dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy -e numba -e fastparquet -e pyarrow -e xarray -e seaborn -e blosc -e tables -e boto -e s3 -e pyreadstat -e parquet -e pyqt -e black requirements-dev.txt >requirements-install.txt"
           dash -c "/usr/bin/python3.5 -m pip install --no-build-isolation -r requirements-install.txt"
       - name: Make pytest-3.8 available as pytest
