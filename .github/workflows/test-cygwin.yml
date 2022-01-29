@@ -45,6 +45,7 @@ jobs:
             python35-cryptography python35-zmq python35-ipython
             libsnappy-devel libiconv-devel dos2unix alternatives
             python35-sip python35-pyqt-builder libQt5Core-devel
+            python35-pip
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
