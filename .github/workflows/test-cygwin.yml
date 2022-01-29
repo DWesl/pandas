@@ -1,0 +1,71 @@
+name: Test on Cygwin
+on:
+  push:
+    paths:
+      - "!.github/**"
+      - ".github/workflows/test-cygwin.yml"
+      - "!doc/**"
+      - "!ci/**"
+      - "ci/deps/actions-38.yaml"
+      - "ci/run_tests.sh"
+      - "requirements-dev.txt"
+      - "pandas/**"
+
+env:
+  PYTEST_WORKERS: "auto"
+  PANDAS_CI: 1
+
+jobs:
+  cygwin_build_test:
+    runs-on: windows-latest
+    env:
+      ENV_FILE: ci/deps/actions-38.yaml
+      PATTERN: "not slow and not network and not clipboard"
+      PYTEST_TARGET: pandas
+      IS_PYPY: false
+      COVERAGE: false
+    concurrency:
+      group: ${{ github.event_name == 'push' && github.run_number || github.ref }}-"actions-38.yaml"-"not slow and not network and not clipboard"
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 6000
+      - name: Install Cygwin
+        uses: egor-tensin/setup-cygwin@v3
+        with:
+          platform: x64
+          install-dir: 'C:\tools\cygwin'
+          packages: >-
+            python38-numpy python38-devel python38-dateutil
+            python38-pytz python38-cython gcc-core gcc-g++
+            python38-html5lib python38-hypothesis python38-jinja2
+            python38-lxml python38-matplotlib python38-pytest
+            python38-requests git cmake liblapack-devel libhdf5-devel
+            python38-cryptography python38-zmq python38-ipython
+            libsnappy-devel libiconv-devel dos2unix alternatives
+            python38-sip python38-pyqt-builder libQt5Core-devel
+      - name: Set Windows PATH
+        uses: egor-tensin/cleanup-path@v1
+        with:
+          dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
+      - name: Install build and test dependencies
+        run: |
+          dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build pybind11 'sip>=5.0.1,<6'"
+          dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy -e numba -e fastparquet -e pyarrow -e xarray -e seaborn -e blosc -e tables -e boto -e s3 -e pyreadstat -e parquet -e pyqt -e black requirements-dev.txt >requirements-install.txt"
+          dash -c "/usr/bin/python3.8 -m pip install --no-build-isolation -r requirements-install.txt"
+      - name: Make pytest-3.8 available as pytest
+        run: |
+          dash -c "/usr/sbin/alternatives --install /usr/bin/pytest pytest /usr/bin/pytest-3.8 38"
+      - name: Build and install editable Pandas
+        run: |
+          dash -c "/usr/bin/python3.8 setup.py build_ext -j 2"
+          dash -c "/usr/bin/python3.8 -m pip install -e . --no-build-isolation --no-use-pep517 --no-index"
+      - name: Rebase DLLs
+        run: |
+          dash -c "/usr/bin/dos2unix ci/rebase_installed_dlls_cygwin.sh ci/list_pandas_dlls.sh"
+          dash ci/rebase_installed_dlls_cygwin.sh 3.8
+      - name: Run Pandas test suite
+        run: |
+          dash -c "/usr/bin/dos2unix ci/run_tests.sh"
+          bash ci/run_tests.sh
