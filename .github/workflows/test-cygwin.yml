@@ -28,12 +28,15 @@ jobs:
       group: ${{ github.event_name == 'push' && github.run_number || github.ref }}-"actions-38.yaml"-"not slow and not network and not clipboard"
       cancel-in-progress: true
     steps:
+
       - name: Write \n newlines
         run: |
           git config --global core.autocrlf input
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 6000
+
       - name: Install Cygwin
         uses: cygwin/cygwin-install-action@v1
         with:
@@ -48,18 +51,26 @@ jobs:
             python38-cffi libsnappy-devel libiconv-devel dos2unix
             alternatives libQt5Core-devel libffi-devel git cmake
             liblapack-devel libhdf5-devel gcc-core gcc-g++
+
       - name: Set Windows PATH
         uses: egor-tensin/cleanup-path@v1
         with:
           dirs: 'C:\cygwin\bin;C:\cygwin\lib\lapack'
+
       - name: Install build and test dependencies
         run: |
           dash -c "/usr/bin/python3.8 -m pip install sphinx-theme-builder scikit-build pybind11"
           dash -c "/usr/bin/grep -v -F -e statsmodels -e scipy -e numba -e fastparquet -e pyarrow -e xarray -e seaborn -e blosc -e tables -e boto -e s3 -e pyreadstat -e parquet -e pyqt -e black -e sphinx -e numpydoc -e git+https -e isort -e bottleneck -e numexpr -e matplotlib -e ipy -e nb -e notebook requirements-dev.txt >requirements-install.txt"
           dash -c "/usr/bin/python3.8 -m pip install --no-build-isolation -r requirements-install.txt"
+
+      - name: Install NumPy != 1.21.*
+        run: |
+          dash -c "/usr/bin/python3.8 -m pip install -U 'numpy!=1.21.*'"
+
       - name: Make pytest-3.8 available as pytest
         run: |
           dash -c "/usr/sbin/alternatives --install /usr/bin/pytest pytest /usr/bin/pytest-3.8 38"
+
       - name: Build and install editable Pandas
         run: |
           dash -c "/usr/bin/python3.8 setup.py build_ext -j 2"
@@ -68,6 +79,7 @@ jobs:
         run: |
           dash -c "/usr/bin/dos2unix ci/rebase_installed_dlls_cygwin.sh ci/list_pandas_dlls.sh"
           dash ci/rebase_installed_dlls_cygwin.sh 3.8
+
       - name: Run Pandas test suite
         run: |
           dash -c "/usr/bin/dos2unix ci/run_tests.sh"
