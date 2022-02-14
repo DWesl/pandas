@@ -69,7 +69,7 @@ jobs:
           
       - name: Rebase DLLs
         run: |
-          C:\cygwin\bin\bash.exe -c "/usr/bin/rebase --database $(find /usr/bin /usr/local/bin /usr/local/lib/python3.8/ /usr/lib/python3.8 /usr/lib/lapack -name \*.dll)"
+          C:\cygwin\bin\bash.exe -c "/usr/bin/rebase --database $(find /usr/local/bin /usr/local/lib/python3.8/ /usr/lib/python3.8 /usr/lib/lapack -name \*.dll)"
 
       - name: Make pytest-3.8 available as pytest
         run: |
