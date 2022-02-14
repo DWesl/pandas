@@ -13,7 +13,6 @@ import warnings
 import numpy as np
 
 from pandas._libs import (
-    iNaT,
     lib,
     missing as libmissing,
 )
@@ -37,10 +36,12 @@ from pandas.util._decorators import (
 )
 from pandas.util._validators import validate_fillna_kwargs
 
+from pandas.core.dtypes.astype import astype_nansafe
 from pandas.core.dtypes.base import ExtensionDtype
 from pandas.core.dtypes.common import (
     is_bool,
     is_bool_dtype,
+    is_datetime64_dtype,
     is_dtype_equal,
     is_float,
     is_float_dtype,
@@ -75,6 +76,7 @@ from pandas.core.array_algos import masked_reductions
 from pandas.core.array_algos.quantile import quantile_with_mask
 from pandas.core.arraylike import OpsMixin
 from pandas.core.arrays import ExtensionArray
+from pandas.core.construction import ensure_wrapped_if_datetimelike
 from pandas.core.indexers import check_array_indexer
 from pandas.core.ops import invalid_comparison
 
@@ -450,7 +452,30 @@ class BaseMaskedArray(OpsMixin, ExtensionArray):
             eacls = dtype.construct_array_type()
             return eacls._from_sequence(self, dtype=dtype, copy=copy)
 
-        raise NotImplementedError("subclass must implement astype to np.dtype")
+        na_value: float | np.datetime64 | lib.NoDefault
+
+        # coerce
+        if is_float_dtype(dtype):
+            # In astype, we consider dtype=float to also mean na_value=np.nan
+            na_value = np.nan
+        elif is_datetime64_dtype(dtype):
+            na_value = np.datetime64("NaT")
+        else:
+            na_value = lib.no_default
+
+        # to_numpy will also raise, but we get somewhat nicer exception messages here
+        if is_integer_dtype(dtype) and self._hasna:
+            raise ValueError("cannot convert NA to integer")
+        if is_bool_dtype(dtype) and self._hasna:
+            # careful: astype_nansafe converts np.nan to True
+            raise ValueError("cannot convert float NaN to bool")
+
+        data = self.to_numpy(dtype=dtype, na_value=na_value, copy=copy)
+        if self.dtype.kind == "f":
+            # TODO: make this consistent between IntegerArray/FloatingArray,
+            #  see test_astype_str
+            return astype_nansafe(data, dtype, copy=False)
+        return data
 
     __array_priority__ = 1000  # higher than ndarray so ops dispatch to us
 
@@ -557,6 +582,97 @@ class BaseMaskedArray(OpsMixin, ExtensionArray):
         # error: Incompatible return value type (got "bool_", expected "bool")
         return self._mask.any()  # type: ignore[return-value]
 
+    def _propagate_mask(
+        self, mask: npt.NDArray[np.bool_] | None, other
+    ) -> npt.NDArray[np.bool_]:
+        if mask is None:
+            mask = self._mask.copy()  # TODO: need test for BooleanArray needing a copy
+            if other is libmissing.NA:
+                # GH#45421 don't alter inplace
+                mask = mask | True
+        else:
+            mask = self._mask | mask
+        return mask
+
+    def _arith_method(self, other, op):
+        op_name = op.__name__
+        omask = None
+
+        if isinstance(other, BaseMaskedArray):
+            other, omask = other._data, other._mask
+
+        elif is_list_like(other):
+            if not isinstance(other, ExtensionArray):
+                other = np.asarray(other)
+            if other.ndim > 1:
+                raise NotImplementedError("can only perform ops with 1-d structures")
+
+        # We wrap the non-masked arithmetic logic used for numpy dtypes
+        #  in Series/Index arithmetic ops.
+        other = ops.maybe_prepare_scalar_for_op(other, (len(self),))
+        pd_op = ops.get_array_op(op)
+        other = ensure_wrapped_if_datetimelike(other)
+
+        if op_name in {"pow", "rpow"} and isinstance(other, np.bool_):
+            # Avoid DeprecationWarning: In future, it will be an error
+            #  for 'np.bool_' scalars to be interpreted as an index
+            #  e.g. test_array_scalar_like_equivalence
+            other = bool(other)
+
+        mask = self._propagate_mask(omask, other)
+
+        if other is libmissing.NA:
+            result = np.ones_like(self._data)
+            if self.dtype.kind == "b":
+                if op_name in {"floordiv", "rfloordiv", "mod", "rmod", "pow", "rpow"}:
+                    dtype = "int8"
+                elif op_name in {"truediv", "rtruediv"}:
+                    dtype = "float64"
+                else:
+                    dtype = "bool"
+                result = result.astype(dtype)
+            elif "truediv" in op_name and self.dtype.kind != "f":
+                # The actual data here doesn't matter since the mask
+                #  will be all-True, but since this is division, we want
+                #  to end up with floating dtype.
+                result = result.astype(np.float64)
+        else:
+            # Make sure we do this before the "pow" mask checks
+            #  to get an expected exception message on shape mismatch.
+            if self.dtype.kind in ["i", "u"] and op_name in ["floordiv", "mod"]:
+                # TODO(GH#30188) ATM we don't match the behavior of non-masked
+                #  types with respect to floordiv-by-zero
+                pd_op = op
+
+            elif self.dtype.kind == "b" and (
+                "div" in op_name or "pow" in op_name or "mod" in op_name
+            ):
+                # TODO(GH#41165): should these be disallowed?
+                pd_op = op
+
+            with np.errstate(all="ignore"):
+                result = pd_op(self._data, other)
+
+        if op_name == "pow":
+            # 1 ** x is 1.
+            mask = np.where((self._data == 1) & ~self._mask, False, mask)
+            # x ** 0 is 1.
+            if omask is not None:
+                mask = np.where((other == 0) & ~omask, False, mask)
+            elif other is not libmissing.NA:
+                mask = np.where(other == 0, False, mask)
+
+        elif op_name == "rpow":
+            # 1 ** x is 1.
+            if omask is not None:
+                mask = np.where((other == 1) & ~omask, False, mask)
+            elif other is not libmissing.NA:
+                mask = np.where(other == 1, False, mask)
+            # x ** 0 is 1.
+            mask = np.where((self._data == 0) & ~self._mask, False, mask)
+
+        return self._maybe_mask_result(result, mask, other, op_name)
+
     def _cmp_method(self, other, op) -> BooleanArray:
         from pandas.core.arrays import BooleanArray
 
@@ -594,12 +710,7 @@ class BaseMaskedArray(OpsMixin, ExtensionArray):
                 if result is NotImplemented:
                     result = invalid_comparison(self._data, other, op)
 
-        # nans propagate
-        if mask is None:
-            mask = self._mask.copy()
-        else:
-            mask = self._mask | mask
-
+        mask = self._propagate_mask(mask, other)
         return BooleanArray(result, mask, copy=False)
 
     def _maybe_mask_result(self, result, mask, other, op_name: str):
@@ -611,6 +722,14 @@ class BaseMaskedArray(OpsMixin, ExtensionArray):
         other : scalar or array-like
         op_name : str
         """
+        if op_name == "divmod":
+            # divmod returns a tuple
+            div, mod = result
+            return (
+                self._maybe_mask_result(div, mask, other, "floordiv"),
+                self._maybe_mask_result(mod, mask, other, "mod"),
+            )
+
         # if we have a float operand we are by-definition
         # a float result
         # or our op is a divide
@@ -632,8 +751,11 @@ class BaseMaskedArray(OpsMixin, ExtensionArray):
             # e.g. test_numeric_arr_mul_tdscalar_numexpr_path
             from pandas.core.arrays import TimedeltaArray
 
-            result[mask] = iNaT
-            return TimedeltaArray._simple_new(result)
+            if not isinstance(result, TimedeltaArray):
+                result = TimedeltaArray._simple_new(result)
+
+            result[mask] = result.dtype.type("NaT")
+            return result
 
         elif is_integer_dtype(result):
             from pandas.core.arrays import IntegerArray
@@ -756,6 +878,10 @@ class BaseMaskedArray(OpsMixin, ExtensionArray):
         uniques = uniques.astype(self.dtype.numpy_dtype, copy=False)
         uniques_ea = type(self)(uniques, np.zeros(len(uniques), dtype=bool))
         return codes, uniques_ea
+
+    @doc(ExtensionArray._values_for_argsort)
+    def _values_for_argsort(self) -> np.ndarray:
+        return self._data
 
     def value_counts(self, dropna: bool = True) -> Series:
         """

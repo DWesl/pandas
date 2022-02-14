@@ -45,7 +45,7 @@ from pandas.core.dtypes.common import (
     ensure_float64,
     ensure_int64,
     ensure_platform_int,
-    is_1d_only_ea_obj,
+    is_1d_only_ea_dtype,
     is_bool_dtype,
     is_categorical_dtype,
     is_complex_dtype,
@@ -601,7 +601,7 @@ class WrappedCythonOp:
             raise NotImplementedError("number of dimensions is currently limited to 2")
         elif values.ndim == 2:
             assert axis == 1, axis
-        elif not is_1d_only_ea_obj(values):
+        elif not is_1d_only_ea_dtype(values.dtype):
             # Note: it is *not* the case that axis is always 0 for 1-dim values,
             #  as we can have 1D ExtensionArrays that we need to treat as 2D
             assert axis == 0
@@ -823,7 +823,7 @@ class BaseGrouper:
     @cache_readonly
     def is_monotonic(self) -> bool:
         # return if my group orderings are monotonic
-        return Index(self.group_info[0]).is_monotonic
+        return Index(self.group_info[0]).is_monotonic_increasing
 
     @cache_readonly
     def group_info(self) -> tuple[npt.NDArray[np.intp], npt.NDArray[np.intp], int]:
