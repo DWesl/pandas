@@ -66,6 +66,10 @@ jobs:
       - name: Install NumPy != 1.21.*
         run: |
           dash -c "/usr/bin/python3.8 -m pip install -U 'numpy!=1.21.*'"
+          
+      - name: Rebase DLLs
+        run: |
+          dash -c "/usr/bin/rebase --database $(find /usr/bin /usr/local/bin /usr/local/lib/python3.8/ /usr/lib/python3.8 /usr/lib/lapack)"
 
       - name: Make pytest-3.8 available as pytest
         run: |
@@ -75,7 +79,7 @@ jobs:
         run: |
           dash -c "/usr/bin/python3.8 setup.py build_ext -j 2"
           dash -c "/usr/bin/python3.8 -m pip install -e . --no-build-isolation --no-use-pep517 --no-index"
-      - name: Rebase DLLs
+      - name: Rebase Pandas DLLs
         run: |
           dash -c "/usr/bin/dos2unix ci/rebase_installed_dlls_cygwin.sh ci/list_pandas_dlls.sh"
           dash ci/rebase_installed_dlls_cygwin.sh 3.8
