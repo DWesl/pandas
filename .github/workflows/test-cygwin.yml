@@ -66,7 +66,7 @@ jobs:
       - name: Install NumPy != 1.21.*
         run: |
           dash -c "/usr/bin/python3.8 -m pip install -U 'numpy!=1.21.*'"
-          
+
       - name: Rebase DLLs
         run: |
           C:\cygwin\bin\bash.exe -c "/usr/bin/rebase --database $(find /usr/local/bin /usr/local/lib/python3.8/ -name \*.dll)"
@@ -77,7 +77,7 @@ jobs:
 
       - name: Build and install editable Pandas
         run: |
-          dash -c "/usr/bin/python3.8 setup.py build_ext -j 2"
+          dash -c "/usr/bin/env CFLAGS=-Wno-char-subscripts /usr/bin/python3.8 setup.py build_ext -j 2"
           dash -c "/usr/bin/python3.8 -m pip install -e . --no-build-isolation --no-use-pep517 --no-index"
       - name: Rebase Pandas DLLs
         run: |
