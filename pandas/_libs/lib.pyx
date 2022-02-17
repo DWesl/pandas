@@ -269,7 +269,7 @@ def is_iterator(obj: object) -> bool:
     False
     """
     IF UNAME_SYSNAME.startswith("CYGWIN"):
-        return isinstance(obj, Iterator)
+        return isinstance(obj, abc.Iterator)
     ELSE:
         return PyIter_Check(obj)
 
