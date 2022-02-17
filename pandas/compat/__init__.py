@@ -64,6 +64,28 @@ def is_platform_windows() -> bool:
     return sys.platform in ["win32", "cygwin"]
 
 
+def is_platform_llp64() -> bool:
+    """
+    Checking if the running platform is LLP64.
+
+    Returns
+    -------
+    bool
+    """
+    return sys.platform == "win32" and IS64
+
+
+def is_newline_dos() -> bool:
+    """
+    Checking if the running platform uses CRLF newlines.
+
+    Returns
+    -------
+    bool
+    """
+    return sys.platform == "win32"
+
+
 def is_platform_linux() -> bool:
     """
     Checking if the running platform is linux.

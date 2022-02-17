@@ -11,7 +11,7 @@ import pytest
 
 from pandas.compat import (
     IS64,
-    is_platform_windows,
+    is_platform_llp64,
 )
 
 import pandas as pd
@@ -873,7 +873,7 @@ class TestReplaceSeriesCoercion(CoercionBase):
             from_key == "complex128" and to_key in ("int64", "float64")
         ):
 
-            if not IS64 or is_platform_windows():
+            if not IS64 or is_platform_llp64():
                 pytest.skip(f"32-bit platform buggy: {from_key} -> {to_key}")
 
             # Expected: do not downcast by replacement

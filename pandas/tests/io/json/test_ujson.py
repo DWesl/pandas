@@ -15,7 +15,7 @@ import pytz
 import pandas._libs.json as ujson
 from pandas.compat import (
     IS64,
-    is_platform_windows,
+    is_platform_llp64,
 )
 
 from pandas import (
@@ -63,7 +63,7 @@ def get_int32_compat_dtype(numpy, orient):
     # See GH#32527
     dtype = np.int64
     if not ((numpy is None or orient == "index") or (numpy is True and orient is None)):
-        if is_platform_windows():
+        if is_platform_llp64():
             dtype = np.int32
         else:
             dtype = np.intp

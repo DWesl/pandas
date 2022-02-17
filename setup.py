@@ -29,8 +29,8 @@ import versioneer
 cmdclass = versioneer.get_cmdclass()
 
 
-def is_platform_windows():
-    return sys.platform == "win32" or sys.platform == "cygwin"
+def is_compiler_msvc():
+    return sys.platform == "win32"
 
 
 def is_platform_mac():
@@ -328,7 +328,7 @@ else:
 
 extra_compile_args = []
 extra_link_args = []
-if is_platform_windows():
+if is_compiler_msvc():
     if debugging_symbols_requested:
         extra_compile_args.append("/Z7")
         extra_link_args.append("/DEBUG")

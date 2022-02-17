@@ -490,7 +490,7 @@ $1$,$2$
         assert not sys.stdout.closed
 
     @pytest.mark.xfail(
-        compat.is_platform_windows(),
+        compat.is_newline_dos(),
         reason=(
             "Especially in Windows, file stream should not be passed"
             "to csv writer without newline='' option."

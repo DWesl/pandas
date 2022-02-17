@@ -11,7 +11,7 @@ import pytest
 
 from pandas.compat import (
     IS64,
-    is_platform_windows,
+    is_platform_llp64,
 )
 import pandas.util._test_decorators as td
 
@@ -159,7 +159,7 @@ class TestPandasContainer:
         expected = int_frame
         if (
             numpy
-            and (not IS64 or is_platform_windows())
+            and (not IS64 or is_platform_llp64())
             and not dtype
             and orient != "split"
         ):
