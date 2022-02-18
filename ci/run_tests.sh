@@ -1,4 +1,5 @@
 #!/bin/bash -e
+declare -i result=0
 
 # Workaround for pytest-xdist (it collects different tests in the workers if PYTHONHASHSEED is not set)
 # https://github.com/pytest-dev/pytest/issues/920
@@ -35,7 +36,10 @@ if [[ $(uname) != "Linux"  && $(uname) != "Darwin" ]]; then
 fi
 
 echo $PYTEST_CMD
-sh -c "$PYTEST_CMD"
+if sh -c "$PYTEST_CMD";
+then
+    result+=$?
+fi
 
 if [[ "$PANDAS_DATA_MANAGER" != "array" ]]; then
     # The ArrayManager tests should have already been run by PYTEST_CMD if PANDAS_DATA_MANAGER was already set to array
@@ -48,5 +52,10 @@ if [[ "$PANDAS_DATA_MANAGER" != "array" ]]; then
     fi
 
     echo $PYTEST_AM_CMD
-    sh -c "$PYTEST_AM_CMD"
+    if sh -c "$PYTEST_AM_CMD";
+    then
+	result+=$?
+    fi
 fi
+
+exit result
