@@ -24,6 +24,7 @@ jobs:
       PYTEST_TARGET: pandas
       IS_PYPY: false
       COVERAGE: false
+      CFLAGS: -Wno-char-subscripts -Wno-array-bounds
     concurrency:
       group: ${{ github.event_name == 'push' && github.run_number || github.ref }}-"actions-38.yaml"-"not slow and not network and not clipboard"
       cancel-in-progress: true
@@ -77,7 +78,7 @@ jobs:
 
       - name: Build and install editable Pandas
         run: |
-          dash -c "/usr/bin/env CFLAGS=-Wno-char-subscripts /usr/bin/python3.8 setup.py build_ext -j 2"
+          dash -c "/usr/bin/python3.8 setup.py build_ext -j 2"
           dash -c "/usr/bin/python3.8 -m pip install -e . --no-build-isolation --no-use-pep517 --no-index"
       - name: Rebase Pandas DLLs
         run: |
