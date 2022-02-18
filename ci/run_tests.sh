@@ -36,10 +36,8 @@ if [[ $(uname) != "Linux"  && $(uname) != "Darwin" ]]; then
 fi
 
 echo $PYTEST_CMD
-if sh -c "$PYTEST_CMD";
-then
-    result+=$?
-fi
+sh -c "$PYTEST_CMD";
+result+=$?
 
 if [[ "$PANDAS_DATA_MANAGER" != "array" ]]; then
     # The ArrayManager tests should have already been run by PYTEST_CMD if PANDAS_DATA_MANAGER was already set to array
@@ -52,10 +50,8 @@ if [[ "$PANDAS_DATA_MANAGER" != "array" ]]; then
     fi
 
     echo $PYTEST_AM_CMD
-    if sh -c "$PYTEST_AM_CMD";
-    then
-	result+=$?
-    fi
+    sh -c "$PYTEST_AM_CMD";
+    result+=$?
 fi
 
 exit result
