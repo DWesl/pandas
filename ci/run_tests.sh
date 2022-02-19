@@ -54,4 +54,4 @@ if [[ "$PANDAS_DATA_MANAGER" != "array" ]]; then
     result+=$?
 fi
 
-exit result
+exit $result
