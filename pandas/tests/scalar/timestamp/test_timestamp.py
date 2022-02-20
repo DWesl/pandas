@@ -154,6 +154,7 @@ class TestTimestampProperties:
             "Not all of tm.get_locales() supported by locale, "
             "especially for case and accents"
         ),
+        strict=False,
     )
     # error: Unsupported operand types for + ("List[None]" and "List[str]")
     @pytest.mark.parametrize(

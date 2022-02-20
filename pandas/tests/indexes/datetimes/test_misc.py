@@ -199,6 +199,7 @@ class TestDatetime64:
             "Not all of tm.get_locales() supported by locale, "
             "especially for case and accents"
         ),
+        strict=False,
     )
     @pytest.mark.parametrize(
         "time_locale", [None] + (tm.get_locales() or [])  # type: ignore[operator]
