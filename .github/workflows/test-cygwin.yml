@@ -43,7 +43,7 @@ jobs:
         with:
           platform: x86_64
           packages: >-
-            python38-numpy=1.19.4-1 python38-devel python38-dateutil
+            python38-numpy==1.19.4-1 python38-devel python38-dateutil
             python38-pytz python38-cython python38-html5lib
             python38-hypothesis python38-jinja2 python38-lxml
             python38-matplotlib python38-pytest python38-requests
