@@ -8,8 +8,7 @@ import pytest
 from pandas.compat import (
     is_ci_environment,
     is_platform_arm,
-    is_platform_mac,
-    is_platform_windows,
+    is_platform_linux,
 )
 import pandas.util._test_decorators as td
 
@@ -68,7 +67,7 @@ def s3_base(worker_id):
         os.environ.setdefault("AWS_ACCESS_KEY_ID", "foobar_key")
         os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "foobar_secret")
         if is_ci_environment():
-            if is_platform_arm() or is_platform_mac() or is_platform_windows():
+            if is_platform_arm() and not is_platform_linux():
                 # NOT RUN on Windows/MacOS/ARM, only Ubuntu
                 # - subprocess in CI can cause timeouts
                 # - Azure pipelines/Github Actions do not support

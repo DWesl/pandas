@@ -1,6 +1,7 @@
 import calendar
 from datetime import datetime
 import locale
+import sys
 import unicodedata
 
 import numpy as np
@@ -192,6 +193,13 @@ class TestDatetime64:
 
     # GH 12806
     # error: Unsupported operand types for + ("List[None]" and "List[str]")
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason=(
+            "Not all of tm.get_locales() supported by locale, "
+            "especially for case and accents"
+        ),
+    )
     @pytest.mark.parametrize(
         "time_locale", [None] + (tm.get_locales() or [])  # type: ignore[operator]
     )

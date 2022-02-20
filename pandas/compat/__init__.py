@@ -61,7 +61,7 @@ def is_platform_windows() -> bool:
     bool
         True if the running platform is windows.
     """
-    return sys.platform in ["win32", "cygwin"]
+    return sys.platform == "win32"
 
 
 def is_platform_llp64() -> bool:
@@ -72,6 +72,8 @@ def is_platform_llp64() -> bool:
     -------
     bool
     """
+    # Alternately, define a is_default_int_32bit as sys.platform ==
+    # "win32" or IS32
     return sys.platform == "win32" and IS64
 
 

@@ -7,6 +7,7 @@ from datetime import (
 )
 import locale
 import pickle
+import sys
 import unicodedata
 
 from dateutil.tz import tzutc
@@ -146,6 +147,13 @@ class TestTimestampProperties:
     @pytest.mark.parametrize(
         "data",
         [Timestamp("2017-08-28 23:00:00"), Timestamp("2017-08-28 23:00:00", tz="EST")],
+    )
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason=(
+            "Not all of tm.get_locales() supported by locale, "
+            "especially for case and accents"
+        ),
     )
     # error: Unsupported operand types for + ("List[None]" and "List[str]")
     @pytest.mark.parametrize(

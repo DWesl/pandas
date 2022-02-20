@@ -8,7 +8,7 @@ import pytest
 
 from pandas.compat import (
     IS64,
-    is_platform_windows,
+    is_platform_llp64,
 )
 
 from pandas.core.dtypes.common import (
@@ -750,7 +750,7 @@ class TestCategoricalConstructors:
         assert not tm.shares_memory(result, cat)
 
     @pytest.mark.xfail(
-        not IS64 or is_platform_windows(),
+        not IS64 or is_platform_llp64(),
         reason="Incorrectly raising in ensure_datetime64ns",
     )
     def test_constructor_datetime64_non_nano(self):
