@@ -1,6 +1,7 @@
 """Tests for Table Schema integration."""
 from collections import OrderedDict
 import json
+import sys
 
 import numpy as np
 import pytest
@@ -629,6 +630,9 @@ class TestTableOrient:
         with tm.assert_produces_warning():
             set_default_names(df)
 
+    @pytest.mark.xfail(
+        sys.platform == "cygwin", reason="TypeError: Expected date object"
+    )
     def test_timestamp_in_columns(self):
         df = DataFrame(
             [[1, 2]], columns=[pd.Timestamp("2016"), pd.Timedelta(10, unit="s")]

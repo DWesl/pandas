@@ -3,6 +3,7 @@ Tests that work on both the Python and C engines but do not have a
 specific classification into the other test modules.
 """
 from io import StringIO
+import sys
 
 import numpy as np
 import pytest
@@ -53,7 +54,9 @@ def test_too_many_exponent_digits(all_parsers_all_precisions, exp, request):
     data = f"data\n10E{exp}"
     result = parser.read_csv(StringIO(data), float_precision=precision)
     if precision == "round_trip":
-        if exp == 999999999999999999 and is_platform_linux():
+        if exp == 999999999999999999 and (
+            is_platform_linux() or sys.platform == "cygwin"
+        ):
             mark = pytest.mark.xfail(reason="GH38794, on Linux gives object result")
             request.node.add_marker(mark)
 

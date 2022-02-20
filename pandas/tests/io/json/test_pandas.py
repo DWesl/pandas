@@ -810,6 +810,10 @@ class TestPandasContainer:
     @pytest.mark.parametrize("date_format", ["epoch", "iso"])
     @pytest.mark.parametrize("as_object", [True, False])
     @pytest.mark.parametrize("date_typ", [datetime.date, datetime.datetime, Timestamp])
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason="pd.NaT encodes as object (dict of attributes), not null",
+    )
     def test_date_index_and_values(self, date_format, as_object, date_typ):
         data = [date_typ(year=2020, month=1, day=1), pd.NaT]
         if as_object:
@@ -1039,6 +1043,10 @@ DataFrame\\.index values are different \\(100\\.0 %\\)
         result["c"] = pd.to_datetime(result.c)
         tm.assert_frame_equal(frame, result)
 
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason="OverflowError: Maximum recursion depth reached",
+    )
     def test_mixed_timedelta_datetime(self):
         frame = DataFrame({"a": [timedelta(23), Timestamp("20130101")]}, dtype=object)
 
@@ -1051,6 +1059,13 @@ DataFrame\\.index values are different \\(100\\.0 %\\)
     @pytest.mark.parametrize("as_object", [True, False])
     @pytest.mark.parametrize("date_format", ["iso", "epoch"])
     @pytest.mark.parametrize("timedelta_typ", [pd.Timedelta, timedelta])
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason=(
+            "OverflowError: Maximum recursion depth reached; "
+            "pd.NaT encodes as object (dict of attributes) not null"
+        ),
+    )
     def test_timedelta_to_json(self, as_object, date_format, timedelta_typ):
         # GH28156: to_json not correctly formatting Timedelta
         data = [timedelta_typ(days=1), timedelta_typ(days=2), pd.NaT]
@@ -1180,6 +1195,9 @@ DataFrame\\.index values are different \\(100\\.0 %\\)
             Timestamp("2013-01-10 00:00:00-0500"),
         ],
     )
+    @pytest.mark.xfail(
+        sys.platform == "cygwin", reason="TypeError: Expected date object"
+    )
     def test_tz_is_utc(self, ts):
         from pandas.io.json import dumps
 
@@ -1196,6 +1214,9 @@ DataFrame\\.index values are different \\(100\\.0 %\\)
             pd.date_range("2013-01-01 00:00:00", periods=2, tz="US/Eastern"),
             pd.date_range("2013-01-01 00:00:00-0500", periods=2),
         ],
+    )
+    @pytest.mark.xfail(
+        sys.platform == "cygwin", reason="TypeError: Expected date object"
     )
     def test_tz_range_is_utc(self, tz_range):
         from pandas.io.json import dumps
@@ -1777,6 +1798,9 @@ DataFrame\\.index values are different \\(100\\.0 %\\)
             timeout -= 0.1
             assert timeout > 0, "Timed out waiting for file to appear on moto"
 
+    @pytest.mark.xfail(
+        sys.platform == "cygwin", reason="Nulls get encoded as empty table, not null"
+    )
     def test_json_pandas_nulls(self, nulls_fixture, request):
         # GH 31615
         if isinstance(nulls_fixture, Decimal):

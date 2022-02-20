@@ -5,6 +5,7 @@ import json
 import locale
 import math
 import re
+import sys
 import time
 
 import dateutil
@@ -413,6 +414,11 @@ class TestUltraJSONTests:
 
     @pytest.mark.parametrize(
         "decoded_input", [NaT, np.datetime64("NaT"), np.nan, np.inf, -np.inf]
+    )
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason="NaT encodes as object (dict of attributes) not null",
+        strict=False,
     )
     def test_encode_as_null(self, decoded_input):
         assert ujson.encode(decoded_input) == "null", "Expected null"
@@ -1231,6 +1237,11 @@ class TestPandasJSONTests:
             Timedelta(milliseconds=1, microseconds=1, nanoseconds=1),
             Timedelta(milliseconds=999, microseconds=999, nanoseconds=999),
         ],
+    )
+    @pytest.mark.xfail(
+        sys.platform == "cygwin",
+        reason="OverflowError: maximum recursion level reached",
+        strict=False,
     )
     def test_encode_timedelta_iso(self, td):
         # GH 28256
