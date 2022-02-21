@@ -2,6 +2,7 @@
 Tests for DateOffset additions over Daylight Savings Time
 """
 from datetime import timedelta
+import sys
 
 import pytest
 import pytz
@@ -185,11 +186,20 @@ class TestDST:
             Timestamp("1905-07-01"),
             MonthBegin(66),
             "Africa/Kinshasa",
-            marks=pytest.mark.xfail(
-                # error: Module has no attribute "__version__"
-                float(pytz.__version__) <= 2020.1,  # type: ignore[attr-defined]
-                reason="GH#41906",
-            ),
+            marks=[
+                pytest.mark.xfail(
+                    # error: Module has no attribute "__version__"
+                    float(pytz.__version__) <= 2020.1,  # type: ignore[attr-defined]
+                    reason="GH#41906",
+                ),
+                pytest.mark.xfail(
+                    sys.platform == "cygwin",
+                    reason=(
+                        "Failed: DID NOT RAISE "
+                        "<class 'pytz.exceptions.AmbiguousTimeError'>"
+                    ),
+                ),
+            ],
         ),
         (
             Timestamp("2021-10-01 01:15"),
