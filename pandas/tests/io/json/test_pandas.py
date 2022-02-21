@@ -1817,9 +1817,7 @@ DataFrame\\.index values are different \\(100\\.0 %\\)
         if isinstance(nulls_fixture, Decimal):
             mark = pytest.mark.xfail(reason="not implemented")
             request.node.add_marker(mark)
-        if nulls_fixture is None or isinstance(
-            nulls_fixture, (pd._libs.missing.NAType)
-        ):
+        if isinstance(nulls_fixture, (pd._libs.missing.NAType)):
             request.node.add_marker(
                 pytest.mark.xfail(
                     sys.platform == "cygwin",
