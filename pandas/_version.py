@@ -87,6 +87,11 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False, env=
             e = sys.exc_info()[1]
             if e.errno == errno.ENOENT:
                 continue
+            if e.errno == errno.EAGAIN and sys.platform == "cygwin":
+                # There is an excellent chance this is a fork() failure
+                # Check BLODA, rebase all DLLs, and try again.
+                # Sometime a reboot helps.
+                continue
             if verbose:
                 print("unable to run %s" % dispcmd)
                 print(e)
